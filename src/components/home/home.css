@@ -1,0 +1,15 @@
+.container{
+  
+}
+.imgCatchow{
+  margin-top: 40px;
+  width: 70px;
+  height: 75px;
+  margin-left: 30px;
+}
+
+.articulo{
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
