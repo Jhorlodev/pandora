@@ -9,15 +9,15 @@ function Home() {
 
   return (
     <div className='container'>
-      <h3>home</h3>
+      <h3 className='titulo'>home</h3>
       <section className='articulo'>
         <img
           className='imgCatchow'
           src={CatChow}
-          alt='carchow adulto 19.5 kg'
+          alt='catchow adulto 19.5 kg'
           onClick={() => navigate('/formulario/CatChow')}
         />
-        <p>CatChow adultos 19.5 kg</p>
+        <p className='titulo'>CatChow adultos 19.5 kg</p>
       </section>
 
       <section className='articulo'>
@@ -27,7 +27,7 @@ function Home() {
           alt='Arena sanitaria 5 kg'
           onClick={() => navigate('/formulario/Arena')}
         />
-        <p>Arena sanitaria 5 kg</p>
+        <p className='titulo'>Arena sanitaria 5 kg</p>
       </section>
 
       <section className='articulo'>
@@ -37,7 +37,7 @@ function Home() {
           alt='churus tuna'
           onClick={() => navigate('/formulario/Churus')}
         />
-        <p>churus tuna</p>
+        <p className='titulo'>churus tuna</p>
       </section>
     </div>
   )

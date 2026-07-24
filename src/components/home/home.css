@@ -1,15 +1,123 @@
-.container{
-  
-}
-.imgCatchow{
-  margin-top: 40px;
-  width: 70px;
-  height: 75px;
-  margin-left: 30px;
+/* ===== Variables de tema (mismas que Formulario.css) ===== */
+:root {
+  --bg: #f4f5f7;
+  --card-bg: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #6b7280;
+  --border: #e2e4e9;
+  --primary: #ff8a3d;
+  --primary-hover: #e8752c;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --radius: 16px;
 }
 
-.articulo{
-  display: flex;
-  align-items: center;
-  gap: 20px;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121316;
+    --card-bg: #1c1d21;
+    --text: #f1f1f3;
+    --text-muted: #a0a2a8;
+    --border: #2c2d32;
+    --primary: #ff9350;
+    --primary-hover: #ffa869;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  margin: 0;
+}
+
+/* ===== Contenedor principal ===== */
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+}
+
+.container h3 {
+  text-align: center;
+  font-size: 1.4rem;
+  margin-bottom: 1.5rem;
+  text-transform: capitalize;
+}
+
+/* ===== Tarjetas de producto ===== */
+.articulo {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.imgCatchow {
+  width: 100%;
+  max-width: 260px;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.titulo{
+  color: var(--primary);
+}
+
+
+.imgCatchow:hover {
+  transform: scale(1.03);
+}
+
+.imgCatchow:active {
+  transform: scale(0.97);
+}
+
+.articulo p {
+  margin: 0.75rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ===== Escritorio: grilla de productos ===== */
+@media (min-width: 640px) {
+  .container {
+    max-width: 900px;
+    padding: 3rem 1.5rem;
+  }
+
+  .container h3 {
+    font-size: 1.75rem;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    align-content: start;
+  }
+
+  .container h3 {
+    grid-column: 1 / -1;
+  }
+
+  .articulo {
+    margin-bottom: 0;
+  }
+
+  .articulo:hover {
+    transform: translateY(-4px);
+  }
 }

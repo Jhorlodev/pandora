@@ -1,14 +1,14 @@
-/* ===== Variables de tema ===== */
+/* ===== Variables de tema (acento azul para Arena) ===== */
 :root {
   --bg: #f4f5f7;
   --card-bg: #ffffff;
   --text: #1a1a1a;
   --text-muted: #6b7280;
   --border: #e2e4e9;
-  --primary: #ff8a3d;
-  --primary-hover: #e8752c;
-  --stock-bg: #fff4ea;
-  --stock-text: #c2570f;
+  --primary: #3d8aff;
+  --primary-hover: #2c72e8;
+  --stock-bg: #eaf2ff;
+  --stock-text: #0f57c2;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   --radius: 16px;
 }
@@ -20,10 +20,10 @@
     --text: #f1f1f3;
     --text-muted: #a0a2a8;
     --border: #2c2d32;
-    --primary: #ff9350;
-    --primary-hover: #ffa869;
-    --stock-bg: #2a1f16;
-    --stock-text: #ffb877;
+    --primary: #5c9fff;
+    --primary-hover: #7cb2ff;
+    --stock-bg: #16202a;
+    --stock-text: #77b3ff;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
 }
@@ -146,7 +146,7 @@ body {
   cursor: not-allowed;
 }
 
-/* ===== Escritorio: más espacio, formulario centrado ===== */
+/* ===== Escritorio ===== */
 @media (min-width: 640px) {
   .container {
     max-width: 480px;
