@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase/supabase.js";
 import "./Formulario.css";
 const Formulario = () => {
-  const [stock, setStock] = useState(0);
+  const [stockGramos, setStockGramos] = useState(0);
   const [productoId, setProductoId] = useState(null);
   const [kilosComprados, setKilosComprados] = useState("");
   const [precio, setPrecio] = useState("");
@@ -11,8 +11,9 @@ const Formulario = () => {
   const [medioPago, setMedioPago] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  const NOMBRE_BD = "comidagato";
+  const NOMBRE_BD = "comida para gato";
   const NOMBRE_MOSTRAR = "comida para gato";
+  const GRAMOS_POR_KILO = 1000;
 
   // Verificar estructura de la tabla ventas al cargar
   useEffect(() => {
@@ -21,7 +22,6 @@ const Formulario = () => {
 
   const verificarTablaVentas = async () => {
     try {
-      // Intentar insertar un registro de prueba para ver la estructura
       const { data, error } = await supabase
         .from("ventas")
         .select("*")
@@ -77,20 +77,22 @@ const Formulario = () => {
     console.log("📦 Datos encontrados:", data);
 
     if (data && data.length > 0) {
-      setStock(data[0].stock);
+      setStockGramos(data[0].stock);
       setProductoId(data[0].id);
       console.log(
         "✅ Producto encontrado - ID:",
         data[0].id,
-        "Stock:",
+        "Stock (g):",
         data[0].stock,
       );
     } else {
       console.log("❌ No se encontró el producto");
-      setStock(0);
+      setStockGramos(0);
       setProductoId(null);
     }
   };
+
+  const esConsumoInterno = medioPago === "consumo interno";
 
   const handleForm = async (e) => {
     e.preventDefault();
@@ -98,7 +100,8 @@ const Formulario = () => {
     console.log("🚀 Iniciando proceso de venta");
 
     const kilosNum = Number(kilosComprados);
-    const precioNum = Number(precio);
+    const gramosVendidos = kilosNum * GRAMOS_POR_KILO;
+    const precioNum = esConsumoInterno ? 0 : Number(precio);
 
     // Validaciones
     if (!kilosComprados || kilosNum <= 0) {
@@ -106,7 +109,12 @@ const Formulario = () => {
       return;
     }
 
-    if (!precio || precioNum <= 0) {
+    if (!medioPago) {
+      alert("❌ Seleccioná un medio de pago");
+      return;
+    }
+
+    if (!esConsumoInterno && (!precio || precioNum <= 0)) {
       alert("❌ Ingresá un precio válido");
       return;
     }
@@ -121,21 +129,25 @@ const Formulario = () => {
       return;
     }
 
-    if (kilosNum > stock) {
-      alert(`❌ No hay suficiente stock. Disponible: ${stock} kg`);
+    if (gramosVendidos > stockGramos) {
+      alert(
+        `❌ No hay suficiente stock. Disponible: ${(stockGramos / GRAMOS_POR_KILO).toFixed(2)} kg`,
+      );
       return;
     }
 
     setCargando(true);
 
-    const nuevoStock = stock - kilosNum;
-    console.log(`🔄 Actualizando stock de ${stock} a ${nuevoStock}`);
+    const nuevoStockGramos = stockGramos - gramosVendidos;
+    console.log(
+      `🔄 Actualizando stock de ${stockGramos}g a ${nuevoStockGramos}g`,
+    );
 
-    // 1. Actualizar stock
+    // 1. Actualizar stock (en gramos)
     console.log("📝 Paso 1: Actualizar stock...");
     const { error: errorStock } = await supabase
       .from("productos")
-      .update({ stock: nuevoStock })
+      .update({ stock: nuevoStockGramos })
       .eq("id", productoId);
 
     if (errorStock) {
@@ -146,11 +158,11 @@ const Formulario = () => {
     }
     console.log("✅ Stock actualizado correctamente");
 
-    // 2. Insertar venta
+    // 2. Insertar venta (cantidad en gramos, igual que el stock)
     console.log("📝 Paso 2: Guardar venta...");
     console.log("Datos de la venta:", {
       producto_id: productoId,
-      cantidad: kilosNum,
+      cantidad: gramosVendidos,
       precio: precioNum,
       fecha,
       cliente: cliente || null,
@@ -162,7 +174,7 @@ const Formulario = () => {
         .from("ventas")
         .insert({
           producto_id: productoId,
-          cantidad: kilosNum,
+          cantidad: gramosVendidos,
           precio: precioNum,
           fecha,
           cliente: cliente || null,
@@ -176,7 +188,6 @@ const Formulario = () => {
         console.error("Mensaje:", errorVenta.message);
         console.error("Detalles:", errorVenta.details);
 
-        // Mensajes específicos según el error
         if (errorVenta.code === "23502") {
           alert(
             "❌ Error: La tabla ventas tiene una columna que no existe o es requerida",
@@ -206,7 +217,7 @@ const Formulario = () => {
     }
 
     // 3. Actualizar el stock localmente
-    setStock(nuevoStock);
+    setStockGramos(nuevoStockGramos);
 
     // 4. Limpiar campos
     setKilosComprados("");
@@ -226,7 +237,7 @@ const Formulario = () => {
       <div className="stock-display">
         <div className="stock-label">Stock disponible</div>
         <div className="stock-value">
-          {stock} <span>kg</span>
+          {(stockGramos / GRAMOS_POR_KILO).toFixed(2)} <span>kg</span>
         </div>
       </div>
 
@@ -243,13 +254,13 @@ const Formulario = () => {
         />
         <input
           type="number"
-          value={precio}
+          value={esConsumoInterno ? "" : precio}
           onChange={(e) => setPrecio(e.target.value)}
-          placeholder="precio"
+          placeholder={esConsumoInterno ? "sin costo (consumo interno)" : "precio"}
           step="0.01"
           min="0"
-          required
-          disabled={cargando}
+          required={!esConsumoInterno}
+          disabled={cargando || esConsumoInterno}
         />
         <input
           type="date"
@@ -264,12 +275,17 @@ const Formulario = () => {
           placeholder="cliente (opcional)"
           disabled={cargando}
         />
-        <input
+        <select
           value={medioPago}
           onChange={(e) => setMedioPago(e.target.value)}
-          placeholder="medio de pago (opcional)"
+          required
           disabled={cargando}
-        />
+        >
+          <option value="" disabled>medio de pago</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="consumo interno">Consumo interno</option>
+        </select>
         <button type="submit" disabled={cargando}>
           {cargando ? "Procesando..." : "Enviar"}
         </button>

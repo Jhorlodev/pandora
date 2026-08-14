@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase/supabase.js";
-import "./arena.css";
+import "./Formulario.css";
 
-const FormularioArena = () => {
+const CatChaw = () => {
   const [stock, setStock] = useState(0);
   const [productoId, setProductoId] = useState(null);
-  const [bolsas, setBolsas] = useState("");
+  const [kilosComprados, setKilosComprados] = useState("");
   const [precio, setPrecio] = useState("");
   const [fecha, setFecha] = useState("");
   const [cliente, setCliente] = useState("");
   const [medioPago, setMedioPago] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  const NOMBRE_BD = "arena";
-  const NOMBRE_MOSTRAR = "arena sanitaria";
+  const NOMBRE_BD = "comidagato";
+  const NOMBRE_MOSTRAR = "comida para gato";
 
   // Verificar estructura de la tabla ventas al cargar
   useEffect(() => {
@@ -22,6 +22,7 @@ const FormularioArena = () => {
 
   const verificarTablaVentas = async () => {
     try {
+      // Intentar insertar un registro de prueba para ver la estructura
       const { data, error } = await supabase
         .from("ventas")
         .select("*")
@@ -48,7 +49,7 @@ const FormularioArena = () => {
     cargarStock();
 
     const canal = supabase
-      .channel("productos-arena")
+      .channel("productos-comidagato")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "productos" },
@@ -92,22 +93,21 @@ const FormularioArena = () => {
     }
   };
 
-  const esConsumoInterno = medioPago === "consumo interno";
-
   const handleForm = async (e) => {
     e.preventDefault();
 
     console.log("🚀 Iniciando proceso de venta");
 
-    const bolsasNum = Number(bolsas);
-    const precioNum = esConsumoInterno ? 0 : Number(precio);
+    const kilosNum = Number(kilosComprados);
+    const precioNum = Number(precio);
 
-    if (!bolsas || bolsasNum <= 0 || !Number.isInteger(bolsasNum)) {
-      alert("❌ Ingresá una cantidad válida de bolsas (número entero)");
+    // Validaciones
+    if (!kilosComprados || kilosNum <= 0) {
+      alert("❌ Ingresá una cantidad válida de kilos");
       return;
     }
 
-    if (!esConsumoInterno && (!precio || precioNum <= 0)) {
+    if (!precio || precioNum <= 0) {
       alert("❌ Ingresá un precio válido");
       return;
     }
@@ -117,26 +117,22 @@ const FormularioArena = () => {
       return;
     }
 
-    if (!medioPago) {
-      alert("❌ Seleccioná un medio de pago");
-      return;
-    }
-
     if (!productoId) {
       alert("❌ Producto no encontrado en la base de datos");
       return;
     }
 
-    if (bolsasNum > stock) {
-      alert(`❌ No hay suficiente stock. Disponible: ${stock} bolsas`);
+    if (kilosNum > stock) {
+      alert(`❌ No hay suficiente stock. Disponible: ${stock} kg`);
       return;
     }
 
     setCargando(true);
 
-    const nuevoStock = stock - bolsasNum;
+    const nuevoStock = stock - kilosNum;
     console.log(`🔄 Actualizando stock de ${stock} a ${nuevoStock}`);
 
+    // 1. Actualizar stock
     console.log("📝 Paso 1: Actualizar stock...");
     const { error: errorStock } = await supabase
       .from("productos")
@@ -151,10 +147,11 @@ const FormularioArena = () => {
     }
     console.log("✅ Stock actualizado correctamente");
 
+    // 2. Insertar venta
     console.log("📝 Paso 2: Guardar venta...");
     console.log("Datos de la venta:", {
       producto_id: productoId,
-      cantidad: bolsasNum,
+      cantidad: kilosNum,
       precio: precioNum,
       fecha,
       cliente: cliente || null,
@@ -166,7 +163,7 @@ const FormularioArena = () => {
         .from("ventas")
         .insert({
           producto_id: productoId,
-          cantidad: bolsasNum,
+          cantidad: kilosNum,
           precio: precioNum,
           fecha,
           cliente: cliente || null,
@@ -180,6 +177,7 @@ const FormularioArena = () => {
         console.error("Mensaje:", errorVenta.message);
         console.error("Detalles:", errorVenta.details);
 
+        // Mensajes específicos según el error
         if (errorVenta.code === "23502") {
           alert(
             "❌ Error: La tabla ventas tiene una columna que no existe o es requerida",
@@ -208,9 +206,11 @@ const FormularioArena = () => {
       return;
     }
 
+    // 3. Actualizar el stock localmente
     setStock(nuevoStock);
 
-    setBolsas("");
+    // 4. Limpiar campos
+    setKilosComprados("");
     setPrecio("");
     setFecha("");
     setCliente("");
@@ -222,42 +222,35 @@ const FormularioArena = () => {
 
   return (
     <div className="container">
-      <h1>🐾 {NOMBRE_MOSTRAR}</h1>
+      <h1>🐱 {NOMBRE_MOSTRAR}</h1>
 
       <div className="stock-display">
         <div className="stock-label">Stock disponible</div>
         <div className="stock-value">
-          {stock} <span>bolsas</span>
+          {stock} <span>kg</span>
         </div>
-        {stock <= 3 && (
-          <div style={{ color: "red", fontWeight: "bold", marginTop: "4px" }}>
-            ⚠️ Stock bajo: quedan {stock} bolsas
-          </div>
-        )}
       </div>
 
       <form onSubmit={handleForm} className="formInput">
         <input
           type="number"
-          value={bolsas}
-          onChange={(e) => setBolsas(e.target.value)}
-          placeholder="bolsas vendidas"
-          step="1"
-          min="1"
+          value={kilosComprados}
+          onChange={(e) => setKilosComprados(e.target.value)}
+          placeholder="kilos comprados"
+          step="0.1"
+          min="0"
           required
           disabled={cargando}
         />
         <input
           type="number"
-          value={esConsumoInterno ? "" : precio}
+          value={precio}
           onChange={(e) => setPrecio(e.target.value)}
-          placeholder={
-            esConsumoInterno ? "sin costo (consumo interno)" : "precio"
-          }
+          placeholder="precio"
           step="0.01"
           min="0"
-          required={!esConsumoInterno}
-          disabled={cargando || esConsumoInterno}
+          required
+          disabled={cargando}
         />
         <input
           type="date"
@@ -272,19 +265,12 @@ const FormularioArena = () => {
           placeholder="cliente (opcional)"
           disabled={cargando}
         />
-        <select
+        <input
           value={medioPago}
           onChange={(e) => setMedioPago(e.target.value)}
-          required
+          placeholder="medio de pago (opcional)"
           disabled={cargando}
-        >
-          <option value="" disabled>
-            medio de pago
-          </option>
-          <option value="efectivo">Efectivo</option>
-          <option value="transferencia">Transferencia</option>
-          <option value="consumo interno">Consumo interno</option>
-        </select>
+        />
         <button type="submit" disabled={cargando}>
           {cargando ? "Procesando..." : "Enviar"}
         </button>
@@ -293,4 +279,4 @@ const FormularioArena = () => {
   );
 };
 
-export default FormularioArena;
+export default CatChaw;
